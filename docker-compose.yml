@@ -1,0 +1,43 @@
+services:
+    product-app:
+        container_name: product-app
+        image: pushkar/productservice
+        restart: on-failure
+        ports:
+            - '10666:9090'
+        environment: 
+            WAIT_HOSTS: mysql:3306
+        depends_on:
+            - docker-mysql
+            - coupon-app
+    coupon-app:
+        container_name: coupon-app
+        image: pushkar/couponservice
+        restart: on-failure
+        ports:
+            - '10555:9091'
+        environment: 
+            WAIT_HOSTS: mysql:3306
+        depends_on:
+            - docker-mysql
+    docker-mysql:
+      container_name: docker-mysql
+      environment:
+        MYSQL_DATABASE: mydb
+        MYSQL_ROOT_HOST: '%'
+        MYSQL_ROOT_PASSWORD: test1234
+      heathcheck:
+        internal: 4s
+        retries: 5
+        test: >-
+          /usr/bin/mysql --user=root --password=test1234 --execute "SHOW
+          DATABASES"
+        timeout: 20s
+      image: mysql
+      ports:
+        - '6666:3306'
+      restart: always
+      volumes:
+        - ./sql/docker-entrypoint-initdb.
+  version: '3'
+  
